@@ -10,33 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiEmojisRouteImport } from './routes/api/emojis'
+import { Route as ApiEmojisSlugRouteImport } from './routes/api/emojis.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEmojisRoute = ApiEmojisRouteImport.update({
+  id: '/api/emojis',
+  path: '/api/emojis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEmojisSlugRoute = ApiEmojisSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiEmojisRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/emojis': typeof ApiEmojisRouteWithChildren
+  '/api/emojis/$slug': typeof ApiEmojisSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/emojis': typeof ApiEmojisRouteWithChildren
+  '/api/emojis/$slug': typeof ApiEmojisSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/emojis': typeof ApiEmojisRouteWithChildren
+  '/api/emojis/$slug': typeof ApiEmojisSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/emojis' | '/api/emojis/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/emojis' | '/api/emojis/$slug'
+  id: '__root__' | '/' | '/api/emojis' | '/api/emojis/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiEmojisRoute: typeof ApiEmojisRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +67,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/emojis': {
+      id: '/api/emojis'
+      path: '/api/emojis'
+      fullPath: '/api/emojis'
+      preLoaderRoute: typeof ApiEmojisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/emojis/$slug': {
+      id: '/api/emojis/$slug'
+      path: '/$slug'
+      fullPath: '/api/emojis/$slug'
+      preLoaderRoute: typeof ApiEmojisSlugRouteImport
+      parentRoute: typeof ApiEmojisRoute
+    }
   }
 }
 
+interface ApiEmojisRouteChildren {
+  ApiEmojisSlugRoute: typeof ApiEmojisSlugRoute
+}
+
+const ApiEmojisRouteChildren: ApiEmojisRouteChildren = {
+  ApiEmojisSlugRoute: ApiEmojisSlugRoute,
+}
+
+const ApiEmojisRouteWithChildren = ApiEmojisRoute._addFileChildren(
+  ApiEmojisRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiEmojisRoute: ApiEmojisRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
