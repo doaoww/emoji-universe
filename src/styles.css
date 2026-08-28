@@ -19,8 +19,8 @@
  */
 
 @theme inline {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  --font-mono: "JetBrains Mono", ui-monospace, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   --color-sticker-yellow: var(--sticker-yellow);
   --color-sticker-pink: var(--sticker-pink);
   --color-sticker-blue: var(--sticker-blue);

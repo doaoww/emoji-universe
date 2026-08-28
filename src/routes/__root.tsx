@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { EmojiBackground } from "@/components/emoji/EmojiBackground";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -77,19 +79,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Emoji Hub — emojis have vibes" },
+      {
+        name: "description",
+        content:
+          "Explore emojis, discover their meanings, and find the perfect one for every moment.",
+      },
+      { name: "author", content: "Emoji Hub" },
+      { property: "og:title", content: "Emoji Hub — emojis have vibes" },
+      {
+        property: "og:description",
+        content: "A little digital world for discovering, copying and saving emojis.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Color+Emoji&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -114,13 +125,56 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function SiteHeader() {
+  const link =
+    "label-mono rounded-full px-3 py-2 transition-transform hover:-rotate-2 hover:scale-105";
+  return (
+    <header className="sticky top-0 z-40 border-b border-ink/10 bg-background/80 backdrop-blur-sm">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
+        <Link to="/" className="text-lg font-bold tracking-tight">
+          <span className="animate-wobble inline-block">✦</span> Emoji Hub
+        </Link>
+        <div className="flex items-center gap-1">
+          <Link to="/" className={link} activeOptions={{ exact: true }} activeProps={{ className: "bg-ink text-background" }}>
+            Home
+          </Link>
+          <Link to="/explore" className={link} activeProps={{ className: "bg-ink text-background" }}>
+            Explore
+          </Link>
+          <Link
+            to="/favorites"
+            className={link}
+            activeProps={{ className: "bg-ink text-background" }}
+          >
+            ♡ Favorites
+          </Link>
+        </div>
+      </nav>
+    </header>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <EmojiBackground />
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <footer className="border-t border-ink/10 px-5 py-8">
+          <p className="label-mono mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 text-muted-foreground">
+            <span>Emoji_hub / 001 — made with 💛 and too many emojis</span>
+            <span>Data: emojihub api ✦ vibes: machine-written</span>
+          </p>
+        </footer>
+      </div>
+      <Toaster position="bottom-center" />
     </QueryClientProvider>
   );
 }
+
