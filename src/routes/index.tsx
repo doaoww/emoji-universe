@@ -3,7 +3,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { emojisQueryOptions } from "@/lib/emoji-queries";
 import { SurpriseMe } from "@/components/emoji/SurpriseMe";
-import { categoryEmoji } from "@/lib/emoji-utils";
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => {
@@ -175,8 +174,6 @@ function Home() {
           </article>
         ))}
       </section>
-
-      <p className="sr-only">{categoryEmoji("symbols")}</p>
     </div>
   );
 }
