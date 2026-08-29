@@ -125,31 +125,57 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const NAV = [
+  { to: "/explore", label: "Catalog" },
+  { to: "/favorites", label: "Favorites" },
+  { to: "/about", label: "About" },
+] as const;
+
 function SiteHeader() {
   const link =
-    "label-mono rounded-full px-3 py-2 transition-transform hover:-rotate-2 hover:scale-105";
+    "rounded-xl px-3 py-2 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground";
+  const active = { className: "bg-secondary text-foreground" };
+
   return (
-    <header className="sticky top-0 z-40 border-b border-ink/10 bg-background/80 backdrop-blur-sm">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
-        <Link to="/" className="text-lg font-bold tracking-tight">
-          <span className="animate-wobble inline-block">✦</span> Emoji Hub
-        </Link>
-        <div className="flex items-center gap-1">
-          <Link to="/" className={link} activeOptions={{ exact: true }} activeProps={{ className: "bg-ink text-background" }}>
-            Home
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+      <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8">
+        <div className="flex h-18 items-center justify-between gap-4 py-3">
+          <Link to="/" className="flex shrink-0 items-center gap-2.5">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand text-xl">
+              😀
+            </span>
+            <span className="text-lg font-extrabold uppercase tracking-tight sm:text-xl">
+              Emoji Hub
+            </span>
           </Link>
-          <Link to="/explore" className={link} activeProps={{ className: "bg-ink text-background" }}>
-            Explore
-          </Link>
-          <Link
-            to="/favorites"
-            className={link}
-            activeProps={{ className: "bg-ink text-background" }}
-          >
-            ♡ Favorites
-          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {NAV.map((item) => (
+              <Link key={item.to} to={item.to} className={link} activeProps={active}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <SurpriseMe className="max-sm:px-3 max-sm:py-2.5 max-sm:text-sm" />
+            <Link
+              to="/favorites"
+              className="hidden items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-base font-semibold text-brand-foreground transition-opacity hover:opacity-90 sm:inline-flex"
+            >
+              ♥ Favorites
+            </Link>
+          </div>
         </div>
-      </nav>
+
+        <nav className="flex items-center gap-1 overflow-x-auto pb-2 md:hidden">
+          {NAV.map((item) => (
+            <Link key={item.to} to={item.to} className={link} activeProps={active}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }
@@ -166,11 +192,11 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
-        <footer className="border-t border-ink/10 px-5 py-8">
-          <p className="label-mono mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 text-muted-foreground">
-            <span>Emoji_hub / 001 — made with 💛 and too many emojis</span>
-            <span>Data: emojihub api ✦ vibes: machine-written</span>
-          </p>
+        <footer className="mt-20 border-t border-border">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-2 px-5 py-8 text-sm text-muted-foreground sm:px-8">
+            <span>Emoji Hub — made with 💛</span>
+            <span>Data: EmojiHub API</span>
+          </div>
         </footer>
       </div>
       <Toaster position="bottom-center" />
