@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { EmojiBackground } from "@/components/emoji/EmojiBackground";
+import { SurpriseMe } from "@/components/emoji/SurpriseMe";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
