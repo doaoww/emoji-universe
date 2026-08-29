@@ -1,23 +1,33 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { emojisQueryOptions } from "@/lib/emoji-queries";
 import { EmojiCard } from "@/components/emoji/EmojiCard";
 import { categoryEmoji } from "@/lib/emoji-utils";
+import { formatCount } from "@/lib/home-data";
+
+type ExploreSearch = { q?: string; category?: string };
 
 export const Route = createFileRoute("/explore")({
+  validateSearch: (search: Record<string, unknown>): ExploreSearch => ({
+    q: typeof search["q"] === "string" && search["q"] ? search["q"] : undefined,
+    category:
+      typeof search["category"] === "string" && search["category"]
+        ? search["category"]
+        : undefined,
+  }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(emojisQueryOptions());
   },
   head: () => ({
     meta: [
-      { title: "Emoji Explorer — search 1,700+ emojis | Emoji Hub" },
+      { title: "Emoji catalog — search 1,700+ emojis | Emoji Hub" },
       {
         name: "description",
         content:
-          "Search emojis by name, filter by category and sort them your way. Copy any emoji in one tap.",
+          "Search emojis by name, filter by category and sort them your way. Copy any emoji in one click.",
       },
-      { property: "og:title", content: "Emoji Explorer — Emoji Hub" },
+      { property: "og:title", content: "Emoji catalog — Emoji Hub" },
       {
         property: "og:description",
         content: "Find the tiny character that says it better than words.",
@@ -33,15 +43,24 @@ type Sort = "az" | "za" | "category";
 
 function ExplorePage() {
   const { data } = useSuspenseQuery(emojisQueryOptions());
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string | null>(null);
+  const { q, category } = Route.useSearch();
+  const navigate = useNavigate({ from: "/explore" });
   const [sort, setSort] = useState<Sort>("az");
   const [limit, setLimit] = useState(60);
 
+  const query = q ?? "";
+
+  function setSearch(next: ExploreSearch) {
+    setLimit(60);
+    navigate({ search: (prev: ExploreSearch) => ({ ...prev, ...next }) });
+  }
+
   const results = useMemo(() => {
-    const q = query.toLowerCase().trim();
+    const needle = query.toLowerCase().trim();
     const list = data.emojis.filter(
-      (e) => (!q || e.name.toLowerCase().includes(q)) && (!category || e.category === category),
+      (e) =>
+        (!needle || e.name.toLowerCase().includes(needle)) &&
+        (!category || e.category.toLowerCase() === category.toLowerCase()),
     );
     return [...list].sort((a, b) => {
       if (sort === "za") return b.name.localeCompare(a.name);
@@ -52,63 +71,57 @@ function ExplorePage() {
   }, [data.emojis, query, category, sort]);
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
-      <p className="label-mono text-muted-foreground">Emoji_hub / explorer</p>
-      <h1 className="mt-3 text-4xl font-black uppercase leading-none sm:text-6xl">
-        Emoji Explorer
-      </h1>
-      <p className="mt-4 max-w-lg text-muted-foreground">
+    <div className="mx-auto w-full max-w-[1280px] px-5 py-14 sm:px-8">
+      <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Emoji catalog</h1>
+      <p className="mt-4 max-w-lg text-lg text-muted-foreground">
         Find the tiny character that says it better than words.
       </p>
 
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="relative flex-1">
-          <span className="sr-only">Search an emoji</span>
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg">
+          <span className="sr-only">Search emojis</span>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg"
+          >
             🔍
           </span>
           <input
             value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setLimit(60);
-            }}
-            placeholder="Search an emoji..."
-            className="w-full rounded-full border border-ink bg-card py-3 pl-12 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:hard-shadow-sm"
+            onChange={(event) => setSearch({ q: event.target.value || undefined })}
+            placeholder="Search emojis…"
+            className="w-full rounded-[18px] border border-border bg-card py-4 pl-12 pr-4 text-base outline-none placeholder:text-muted-foreground focus:border-ink/30"
           />
         </label>
         <select
           value={sort}
           onChange={(event) => setSort(event.target.value as Sort)}
-          className="label-mono rounded-full border border-ink bg-card px-4 py-3"
+          className="rounded-[18px] border border-border bg-card px-4 py-4 text-base font-medium"
           aria-label="Sort emojis"
         >
           <option value="az">A → Z</option>
           <option value="za">Z → A</option>
-          <option value="category">Category</option>
+          <option value="category">By category</option>
         </select>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => setCategory(null)}
-          className={`label-mono rounded-full border border-ink px-3 py-2 transition-transform hover:-rotate-2 ${
-            category === null ? "bg-ink text-background" : "bg-card"
+          onClick={() => setSearch({ category: undefined })}
+          className={`rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors ${
+            !category ? "bg-ink text-background" : "bg-card hover:bg-secondary"
           }`}
         >
-          ✦ All
+          All
         </button>
         {data.categories.map((item) => (
           <button
             key={item}
             type="button"
-            onClick={() => {
-              setCategory(item === category ? null : item);
-              setLimit(60);
-            }}
-            className={`label-mono rounded-full border border-ink px-3 py-2 transition-transform hover:-rotate-2 ${
-              category === item ? "bg-ink text-background" : "bg-card"
+            onClick={() => setSearch({ category: item === category ? undefined : item })}
+            className={`rounded-full border border-border px-4 py-2 text-sm font-semibold capitalize transition-colors ${
+              category === item ? "bg-ink text-background" : "bg-card hover:bg-secondary"
             }`}
           >
             {categoryEmoji(item)} {item}
@@ -116,22 +129,22 @@ function ExplorePage() {
         ))}
       </div>
 
-      <p className="label-mono mt-6 text-muted-foreground">
-        {results.length.toLocaleString()} emojis found
+      <p className="mt-6 text-base text-muted-foreground">
+        {formatCount(results.length)} emojis found
       </p>
 
       {results.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-6xl">🔍 👀 😶‍🌫️</p>
-          <p className="mt-4 text-muted-foreground">
+          <p className="text-6xl">🔍</p>
+          <p className="mt-4 text-lg text-muted-foreground">
             Nothing matched that. Try a simpler word, like &ldquo;cat&rdquo;.
           </p>
         </div>
       ) : (
         <>
-          <ul className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-            {results.slice(0, limit).map((emoji, index) => (
-              <EmojiCard key={emoji.slug} emoji={emoji} index={index} />
+          <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {results.slice(0, limit).map((emoji) => (
+              <EmojiCard key={emoji.slug} emoji={emoji} />
             ))}
           </ul>
           {limit < results.length && (
@@ -139,9 +152,9 @@ function ExplorePage() {
               <button
                 type="button"
                 onClick={() => setLimit((value) => value + 60)}
-                className="label-mono rounded-full border border-ink bg-card px-6 py-3 hard-shadow-sm transition-transform hover:scale-105"
+                className="rounded-2xl border border-border bg-card px-6 py-3.5 text-base font-semibold transition-colors hover:bg-secondary"
               >
-                Load more ✨
+                Load more
               </button>
             </div>
           )}
